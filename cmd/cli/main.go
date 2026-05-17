@@ -1,6 +1,9 @@
 package main
 
 import (
+	"encoding/json"
+	"os"
+
 	"github.com/rtnl/blaze/pkg/provider/craft"
 )
 
@@ -9,27 +12,24 @@ func main() {
 		err error
 	)
 
-	manifest, err := craft.GetLauncherMetaVersionManifest()
+	report, err := craft.ReadPacketsReport("./packets.json")
 	if err != nil {
 		panic(err)
 	}
 
-	latest, ok := manifest.GetLatestVersionEntry(craft.VersionKindRelease).Get()
-	if !ok {
-		panic("latest not found")
-	}
+	packets := report.GeneratePackets()
 
-	version, err := manifest.DownloadVersionData(latest.Id)
+	packetsOutput, err := os.Create("packets_output.json")
 	if err != nil {
 		panic(err)
 	}
 
-	versionServerDownload, ok := version.GetServerDownload().Get()
-	if !ok {
-		panic("version server download not found")
-	}
+	defer packetsOutput.Close()
 
-	err = versionServerDownload.Download("./server.jar")
+	encoder := json.NewEncoder(packetsOutput)
+	encoder.SetIndent("", "\t")
+
+	err = encoder.Encode(packets)
 	if err != nil {
 		panic(err)
 	}
