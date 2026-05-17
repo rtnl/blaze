@@ -1,6 +1,6 @@
 module github.com/rtnl/blaze
 
-go 1.26.2
+go 1.25.10
 
 require (
 	github.com/gin-gonic/gin v1.12.0
